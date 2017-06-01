@@ -22,6 +22,7 @@
 namespace TestHelpers;
 
 use GuzzleHttp\Message\ResponseInterface;
+use GuzzleHttp\Psr7\Request;
 
 /**
  * Helper to test email sending, using mailhog

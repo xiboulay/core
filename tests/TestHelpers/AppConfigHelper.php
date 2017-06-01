@@ -21,7 +21,7 @@
  */
 namespace TestHelpers;
 
-use GuzzleHttp\Message\ResponseInterface;
+use Psr\Http\Message\ResponseInterface;
 use PHPUnit_Framework_Assert;
 
 /**
