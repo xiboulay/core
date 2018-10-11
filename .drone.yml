@@ -125,6 +125,7 @@ pipeline:
       - git clone https://github.com/owncloud/testing.git $$DRONE_WORKSPACE/apps/testing
       - php occ a:l
       - php occ a:e testing
+      - php occ a:d files_versions
       - php occ a:l
       - php occ config:system:set trusted_domains 1 --value=server
       - php occ config:system:set trusted_domains 2 --value=federated
@@ -354,7 +355,7 @@ pipeline:
     commands:
       - touch /drone/saved-settings.sh
       - . /drone/saved-settings.sh
-      - make test-acceptance-api TESTING_REMOTE_SYSTEM=true
+      - make test-acceptance-api TESTING_REMOTE_SYSTEM=true BEHAT_FILTER_TAGS=~files_versions-app-required
     when:
       matrix:
         TEST_SUITE: api
@@ -367,7 +368,7 @@ pipeline:
     commands:
       - touch /drone/saved-settings.sh
       - . /drone/saved-settings.sh
-      - make test-acceptance-cli TESTING_REMOTE_SYSTEM=true
+      - make test-acceptance-cli TESTING_REMOTE_SYSTEM=true BEHAT_FILTER_TAGS=~files_versions-app-required
     when:
       matrix:
         TEST_SUITE: cli
@@ -385,7 +386,7 @@ pipeline:
     commands:
       - touch /drone/saved-settings.sh
       - . /drone/saved-settings.sh
-      - make test-acceptance-webui TESTING_REMOTE_SYSTEM=true
+      - make test-acceptance-webui TESTING_REMOTE_SYSTEM=true BEHAT_FILTER_TAGS=~files_versions-app-required
     when:
       matrix:
         TEST_SUITE: selenium
