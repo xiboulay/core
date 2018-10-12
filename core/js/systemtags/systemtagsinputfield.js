@@ -207,6 +207,7 @@
 					name: e.object.name.trim(),
 					userVisible: true,
 					userAssignable: true,
+					userEditable: true,
 					canAssign: true
 				}, {
 					success: function(model) {
@@ -287,6 +288,18 @@
 		_formatDropDownResult: function(data) {
 			if (!this._resultTemplate) {
 				this._resultTemplate = Handlebars.compile(RESULT_TEMPLATE);
+			}
+
+			/**
+			 * Show edit if the tag is editable. This applies only if the user is
+			 * admin or the user belongs to the white listed group by the edit
+			 * tag
+			 */
+			var editableTag = data.userEditable === false;
+			if (editableTag === true) {
+				this._allowActions = data.editableInGroup === true;
+			} else {
+				this._allowActions = true;
 			}
 			return this._resultTemplate(_.extend({
 				renameTooltip: t('core', 'Rename'),
