@@ -193,8 +193,8 @@ class SharedMount extends MountPoint implements MoveableMount {
 			$fileId = (int)$targetStorage->getCache()->getId(\dirname($targetInternalPath));
 		}
 
-		$targetNodes = \OC::$server->getRootFolder()->getById($fileId);
-		if (empty($targetNodes)) {
+		$targetNodes = \OC::$server->getRootFolder()->getById($fileId, true);
+		if (!isset($targetNodes[0])) {
 			return false;
 		}
 

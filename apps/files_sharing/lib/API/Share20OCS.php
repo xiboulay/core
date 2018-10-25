@@ -179,13 +179,12 @@ class Share20OCS {
 			$userFolder = $this->rootFolder->getUserFolder($this->currentUser->getUID());
 		}
 
-		$nodes = $userFolder->getById($share->getNodeId());
-
-		if (empty($nodes)) {
+		$nodes = $userFolder->getById($share->getNodeId(), true);
+		$node = $nodes[0] ?? null;
+		if ($node === null) {
 			throw new NotFoundException();
 		}
 
-		$node = $nodes[0];
 
 		$result['path'] = $userFolder->getRelativePath($node->getPath());
 		if ($node instanceof \OCP\Files\Folder) {
@@ -861,7 +860,101 @@ class Share20OCS {
 	 * @return \OC\OCS\Result
 	 */
 	public function declineShare($id) {
+<<<<<<< HEAD:apps/files_sharing/lib/API/Share20OCS.php
 		return $this->updateShareState($id, \OCP\Share::STATE_REJECTED);
+=======
+		return $this->updateShareState($id, Share::STATE_REJECTED);
+	}
+
+	/**
+	 * Send a notification to share recipient(s)
+	 *
+	 * @NoCSRFRequired
+	 * @NoAdminRequired
+	 *
+	 * @param int $itemSource
+	 * @param int $shareType
+	 * @param string $recipient
+	 *
+	 * @return Result
+	 */
+	public function notifyRecipients($itemSource, $shareType, $recipient) {
+		$recipientList = [];
+		if ($shareType === Share::SHARE_TYPE_USER) {
+			$recipientList[] = $this->userManager->get($recipient);
+		} elseif ($shareType === Share::SHARE_TYPE_GROUP) {
+			$group = \OC::$server->getGroupManager()->get($recipient);
+			$recipientList = $group->searchUsers('');
+		}
+		// don't send a mail to the user who shared the file
+		$recipientList = \array_filter($recipientList, function ($user) {
+			/** @var IUser $user */
+			return $user->getUID() !== $this->currentUser->getUID();
+		});
+
+		$defaults = new \OCP\Defaults();
+		$mailNotification = new \OC\Share\MailNotifications(
+			$this->shareManager,
+			$this->currentUser,
+			\OC::$server->getL10N('lib'),
+			\OC::$server->getMailer(),
+			$this->config,
+			\OC::$server->getLogger(),
+			$defaults,
+			$this->urlGenerator,
+			$this->eventDispatcher
+		);
+
+		$userFolder = $this->rootFolder->getUserFolder($this->currentUser->getUID());
+		$nodes = $userFolder->getById($itemSource, true);
+		$node = $nodes[0] ?? null;
+		$result = $mailNotification->sendInternalShareMail($node, $shareType, $recipientList);
+
+		// if we were able to send to at least one recipient, mark as sent
+		// allowing the user to resend would spam users who already got a notification
+		if (\count($result) < \count($recipientList)) {
+			$items = $this->shareManager->getSharedWith($recipient, $shareType, $node);
+			if (\count($items) > 0) {
+				$share = $items[0];
+				$share->setMailSend(true);
+				$this->shareManager->updateShare($share);
+			}
+		}
+
+		$message = empty($result)
+			? null
+			: $this->l->t(
+				"Couldn't send mail to following recipient(s): %s ",
+				\implode(', ', $result)
+			);
+		return new Result([], 200, $message);
+	}
+
+	/**
+	 * Just mark a notification to share recipient(s) as sent
+	 *
+	 * @NoCSRFRequired
+	 * @NoAdminRequired
+	 *
+	 * @param int $itemSource
+	 * @param int $shareType
+	 * @param string $recipient
+	 *
+	 * @return Result
+	 */
+	public function notifyRecipientsDisabled($itemSource, $shareType, $recipient) {
+		$userFolder = $this->rootFolder->getUserFolder($this->currentUser->getUID());
+		$nodes = $userFolder->getById($itemSource, true);
+		$node = $nodes[0] ?? null;
+
+		$items = $this->shareManager->getSharedWith($recipient, $shareType, $node);
+		if (\count($items) > 0) {
+			$share = $items[0];
+			$share->setMailSend(true);
+			$this->shareManager->updateShare($share);
+		}
+		return new Result();
+>>>>>>> 0bed389586... do not iterate over all storages when you only need a single node anyway:apps/files_sharing/lib/Controller/Share20OcsController.php
 	}
 
 	/**
