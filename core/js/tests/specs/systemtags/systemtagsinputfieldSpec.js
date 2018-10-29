@@ -113,6 +113,7 @@ describe('OC.SystemTags.SystemTagsInputField tests', function() {
 					name: 'newname',
 					userVisible: true,
 					userAssignable: true,
+					userEditable: true,
 					canAssign: true
 				});
 
@@ -191,6 +192,7 @@ describe('OC.SystemTags.SystemTagsInputField tests', function() {
 					name: 'newname',
 					userVisible: true,
 					userAssignable: true,
+					userEditable: true,
 					canAssign: true
 				});
 
